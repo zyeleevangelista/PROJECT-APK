@@ -192,6 +192,16 @@ public class PremiumActivity extends Activity {
         LinearLayout.LayoutParams footerParams = new LinearLayout.LayoutParams(-1, -2);
         footerParams.topMargin = dp(22);
         column.addView(footer, footerParams);
+        TextView policy = text("Read privacy policy", 13, BLUE, Typeface.BOLD);
+        LinearLayout.LayoutParams policyParams = new LinearLayout.LayoutParams(-1, dp(40));
+        policyParams.topMargin = dp(9);
+        column.addView(policy, policyParams);
+        policy.setOnClickListener(v -> {
+            Intent viewPolicy = new Intent(Intent.ACTION_VIEW,
+                Uri.parse("https://github.com/zyeleevangelista/PROJECT-APK/blob/main/PRIVACY.md"));
+            try { startActivity(viewPolicy); }
+            catch (Exception e) { Toast.makeText(this, "Privacy policy available on GitHub", Toast.LENGTH_LONG).show(); }
+        });
         setContentView(scroll);
         syncStatus();
     }
