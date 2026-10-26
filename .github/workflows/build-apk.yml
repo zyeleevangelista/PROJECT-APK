@@ -1,0 +1,69 @@
+name: Build Lock Video Recorder APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  android-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Locate Android project
+        id: source
+        shell: bash
+        run: |
+          if [ -f "LockVideoRecorder-Android-project.zip" ]; then
+            unzip -q -o "LockVideoRecorder-Android-project.zip"
+            echo "project_dir=LockVideoRecorder" >> "$GITHUB_ENV"
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          elif [ -f "LockVideoRecorder/app/build.gradle" ]; then
+            echo "project_dir=LockVideoRecorder" >> "$GITHUB_ENV"
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          elif [ -f "app/build.gradle" ]; then
+            echo "project_dir=." >> "$GITHUB_ENV"
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Upload LockVideoRecorder-Android-project.zip to the repository root, then rerun this workflow."
+          fi
+
+      - name: Set up Java 17
+        if: steps.source.outputs.ready == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        if: steps.source.outputs.ready == 'true'
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android 35 SDK
+        if: steps.source.outputs.ready == 'true'
+        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+
+      - name: Install Gradle 8.9
+        if: steps.source.outputs.ready == 'true'
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Build installable APK
+        if: steps.source.outputs.ready == 'true'
+        run: gradle -p "$project_dir" :app:assembleDebug --no-daemon
+
+      - name: Upload APK
+        if: steps.source.outputs.ready == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: LockVideoRecorder-debug-APK
+          path: ${{ env.project_dir }}/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
