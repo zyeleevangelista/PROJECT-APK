@@ -16,6 +16,8 @@ source = manifest.read_text()
 assert 'android:name=".MainActivity"' in source
 source = source.replace('android:name=".MainActivity"', 'android:name=".PremiumActivity"')
 source = source.replace('android:label="Lock Video Recorder"', 'android:label="Lock Video Recorder Premium"')
+source = source.replace('android:name=".PremiumActivity"', 'android:name="com.example.lockvideorecorder.PremiumActivity"')
+source = source.replace('android:name=".RecordingService"', 'android:name="com.example.lockvideorecorder.RecordingService"')
 manifest.write_text(source)
 
 service = java / "RecordingService.java"
@@ -142,7 +144,7 @@ android {
     compileSdk 36
 
     defaultConfig {
-        applicationId 'com.example.lockvideorecorder'
+        applicationId 'com.zyeleevangelista.lockvideorecorder'
         minSdk 29
         targetSdk 36
         versionCode 2
